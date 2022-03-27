@@ -1,4 +1,4 @@
-﻿namespace GetWeatherData.Models
+﻿namespace GetWeatherAndInverterData.Models
 {
     public class ReturnData
     {

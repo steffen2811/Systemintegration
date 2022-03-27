@@ -1,4 +1,4 @@
-﻿using GetWeatherData.Models;
+﻿using GetWeatherAndInverterData.Models;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ServiceReference1;
@@ -10,7 +10,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GetWeatherData.backend
+namespace GetWeatherAndInverterData.backend
 {
     public class TimedBackgroundService : IHostedService, IDisposable
     {
@@ -250,7 +250,7 @@ namespace GetWeatherData.backend
             } while (noPowerProductionLastHourFound && (ftpRetries < fptRetryLimit));
         }
 
-        public static WeatherData GetWeatherDataFromBackend()
+        public static WeatherData GetWeatherAndInverterDataFromBackend()
         {
             if (weatherData == null)
                 return new WeatherData("", 0, 0,false, null, null);

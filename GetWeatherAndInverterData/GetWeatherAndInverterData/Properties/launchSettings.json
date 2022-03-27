@@ -9,7 +9,7 @@
     }
   },
   "profiles": {
-    "GetWeatherData": {
+    "GetWeatherAndInverterData": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,

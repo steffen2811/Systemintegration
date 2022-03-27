@@ -4,7 +4,7 @@
 
 @using Dashboard.Data
 
-@inject WeatherDataService ForecastService
+@inject DataService ForecastService
 
 <h1 class="text-center mb-4">Dashboard</h1>
 
@@ -92,7 +92,7 @@ else
     {
         try
         {
-            data = await WeatherDataService.GetWeatherDataAsync();
+            data = await DataService.GetWeatherDataAsync();
             couldNotConnect = false;
             if (data != oldData)
             {
