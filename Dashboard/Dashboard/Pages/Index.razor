@@ -1,0 +1,122 @@
+﻿@page "/"
+
+<PageTitle>Weather forecast</PageTitle>
+
+@using Dashboard.Data
+
+@inject WeatherDataService ForecastService
+
+<h1 class="text-center mb-4">Dashboard</h1>
+
+@if (data == null)
+{
+    @if (couldNotConnect)
+    {
+      <p><em>Kunne ikke forbinde til server... Prøv igen</em></p>
+    }
+    else
+    {
+      <p><em>Loading...</em></p>
+    }
+}
+else
+{
+    <div class="container">
+      <div class="row">
+        <div class="col">
+            <div class="bg-light text-dark p-3 me-3 rounded" style="width: 100%;">
+            <h2 class="text-center mb-0">Aktuel Vejr</h2>
+            @if (data.weatherData.updated == null)
+            {
+              <p>Aktuel vejrinformation er ikke tilgængelig</p>
+            }
+            else
+            {
+              <p class="text-center fw-light" style="font-size: 0.75rem">Sidst opdateret: @data.weatherData.updated</p>
+              <p>Location: @data.weatherData.location</p>
+              <p>Sol oppe?: @((data.weatherData.sunAvaliable) ? "Ja" : "Nej")</p>
+              <p>Skydække: @(data.weatherData.cloudCover)%</p>
+              <p>Temperatur: @(data.weatherData.temperature)°C</p>
+            }
+          </div>
+        </div>
+        <div class="col">
+          <div class="bg-light text-dark p-3 me-3 rounded" style="width: 100%;">
+            <h2 class="text-center mb-0">Vejrudsigt</h2>
+            @if (data.weatherData.updated == null)
+            {
+              <p>Vejrudsigt er ikke tilgængelig</p>
+            }
+            else
+            {
+              <p class="text-center fw-light" style="font-size: 0.75rem">Sidst opdateret: @data.weatherData.updated</p>
+              @foreach (var forecast in data.weatherData.weatherForecast)
+              {
+                <p class="fw-bold mb-0">@forecast.date</p>
+                <p class="mb-0">Skydække: @(forecast.cloudCover)%</p>
+                <p class="mb-3">Temperatur: @(forecast.temperature)°C</p>
+              }
+            }
+          </div>
+        </div>
+        <div class="col">
+            <div class="bg-light text-dark p-3 rounded" style="width: 100%;">
+            <h2 class="text-center mb-0">Strøm-information</h2>
+            @if (data.inverter.updated == null)
+            {
+              <p>Strøm-information er ikke tilgængelig</p>
+            }
+            else
+            {
+              <p class="text-center fw-light" style="font-size: 0.75rem">Sidst opdateret: @data.inverter.updated</p>
+              <p>Strøm produktion den sidste time?: @((data.inverter.powerProductionLastHour) ? "Ja" : "Nej")</p>
+              @if (data.inverter.powerProductionLastHour)
+              {
+                  <p>Watt: @(data.inverter.powerProduction)W</p>
+              }
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+}
+
+
+@code {
+    private ReturnData data;
+    private bool requestDone = false;
+    private bool couldNotConnect = false;
+    ReturnData oldData = null;
+
+    protected async void CallApi()
+    {
+        try
+        {
+            data = await WeatherDataService.GetWeatherDataAsync();
+            couldNotConnect = false;
+            if (data != oldData)
+            {
+                oldData = data;
+                StateHasChanged();
+            }
+        } catch
+        {
+            couldNotConnect = true;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        CallApi();
+
+        var timer = new System.Threading.Timer((_) =>
+        {
+            InvokeAsync( async ()  =>
+            {
+               // Add your update logic here
+               CallApi();
+            });
+        }, null, 0, 6000);
+    }
+}
