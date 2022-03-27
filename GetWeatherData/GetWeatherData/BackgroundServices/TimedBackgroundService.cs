@@ -139,8 +139,8 @@ namespace GetWeatherData.backend
         {
             FtpWebRequest ftpRequest = (FtpWebRequest)WebRequest.Create(ftpUrl);
             FtpWebResponse? fptResponse = null;
-            bool ftpConnected = true;
-            int firstProduction = 0, lastProduction = 0, ftpRetries = 0, firstProductionIndex = 0, lastProductionIndex = 0;
+            bool ftpConnected = true, startFound = false;
+            int index = 0, firstProduction = 0, lastProduction = 0, ftpRetries = 0, firstProductionIndex = 0, lastProductionIndex = 0;
             noPowerProductionLastHourFound = false;
 
             ftpRequest.Credentials = new NetworkCredential(ftpUsername, ftpPassword);
@@ -200,9 +200,6 @@ namespace GetWeatherData.backend
                             "\n",
                             StringSplitOptions.None
                         );
-
-                        bool startFound = false;
-                        int index = 0;
 
                         foreach (string csvLine in lines)
                         {
