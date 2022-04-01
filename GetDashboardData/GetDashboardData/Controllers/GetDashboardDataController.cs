@@ -1,21 +1,21 @@
-﻿using GetWeatherAndInverterData.Models;
+﻿using GetDashboardData.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ServiceReference1;
 using System.Net;
 using System.IO;
-using GetWeatherAndInverterData.backend;
+using GetDashboardData.backend;
 
-namespace GetWeatherAndInverterData.Controllers
+namespace GetDashboardData.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class WeatherAndInverterDataController : ControllerBase
+    public class GetDashboardDataController : ControllerBase
     {
         [HttpGet]
         public ReturnData Get()
         {
-            WeatherData? weatherData = TimedBackgroundService.GetWeatherAndInverterDataFromBackend();
+            WeatherData? weatherData = TimedBackgroundService.GetDashboardDataFromBackend();
             Inverter? inverterData = TimedBackgroundService.GetInverterDataFromBackend();
             var response = new ReturnData(weatherData, inverterData);
             return response;

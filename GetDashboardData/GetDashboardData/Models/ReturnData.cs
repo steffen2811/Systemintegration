@@ -1,4 +1,4 @@
-﻿namespace GetWeatherAndInverterData.Models
+﻿namespace GetDashboardData.Models
 {
     public class ReturnData
     {

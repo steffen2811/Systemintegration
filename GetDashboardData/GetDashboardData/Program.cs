@@ -1,4 +1,4 @@
-using GetWeatherAndInverterData.backend;
+using GetDashboardData.backend;
 
 var builder = WebApplication.CreateBuilder(args);
 

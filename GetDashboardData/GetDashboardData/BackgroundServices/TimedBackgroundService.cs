@@ -1,4 +1,4 @@
-﻿using GetWeatherAndInverterData.Models;
+﻿using GetDashboardData.Models;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ServiceReference1;
@@ -10,15 +10,14 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GetWeatherAndInverterData.backend
+namespace GetDashboardData.backend
 {
     public class TimedBackgroundService : IHostedService, IDisposable
     {
+        private static IConfiguration _config;
+
         private const string location = "Skive";
-        private const string weatherApiPassword = "Jeger1studerende";
         private const string ftpUrl = "ftp://inverter.westeurope.cloudapp.azure.com";
-        private const string ftpUsername = "studerende";
-        private const string ftpPassword = "kmdp4gslmg46jhs";
         private const int fptRetryLimit = 5;
         private const int noOfForecastHours = 4;
         private const int powerColoum = 37;
@@ -34,6 +33,11 @@ namespace GetWeatherAndInverterData.backend
         private static int lastMinUpdateWeb;
         private static System.Timers.Timer ftpDataTimer = new System.Timers.Timer(300000);
         private static System.Timers.Timer webDataTimer = new System.Timers.Timer(60000);
+
+        public TimedBackgroundService(IConfiguration config)
+        {
+            _config = config;
+        }
 
         public Task StartAsync(CancellationToken stoppingToken)
         {
@@ -104,7 +108,7 @@ namespace GetWeatherAndInverterData.backend
 
             try
             {
-                result = client.GetForecastAsync(location, weatherApiPassword).Result.Body.GetForecastResult;
+                result = client.GetForecastAsync(location, _config["Weather:ApiKey"]).Result.Body.GetForecastResult;
             }
             catch
             {
@@ -143,7 +147,7 @@ namespace GetWeatherAndInverterData.backend
             int index = 0, firstProduction = 0, lastProduction = 0, ftpRetries = 0, firstProductionIndex = 0, lastProductionIndex = 0;
             noPowerProductionLastHourFound = false;
 
-            ftpRequest.Credentials = new NetworkCredential(ftpUsername, ftpPassword);
+            ftpRequest.Credentials = new NetworkCredential(_config["ftp:Username"], _config["ftp:Password"]);
             ftpRequest.Method = WebRequestMethods.Ftp.ListDirectory;
 
             // Handle if no file is found for this hour. Retry again to check if the file is uploader later than expected.
@@ -188,7 +192,7 @@ namespace GetWeatherAndInverterData.backend
                         ftpRequest.Method = WebRequestMethods.Ftp.DownloadFile;
 
                         // This example assumes the FTP site uses anonymous logon.
-                        ftpRequest.Credentials = new NetworkCredential(ftpUsername, ftpPassword);
+                        ftpRequest.Credentials = new NetworkCredential(_config["ftp:Username"], _config["ftp:Password"]);
 
                         fptResponse = (FtpWebResponse)ftpRequest.GetResponse();
 
@@ -250,7 +254,7 @@ namespace GetWeatherAndInverterData.backend
             } while (noPowerProductionLastHourFound && (ftpRetries < fptRetryLimit));
         }
 
-        public static WeatherData GetWeatherAndInverterDataFromBackend()
+        public static WeatherData GetDashboardDataFromBackend()
         {
             if (weatherData == null)
                 return new WeatherData("", 0, 0,false, null, null);
