@@ -3,12 +3,14 @@
     public class ReturnData
     {
         public WeatherData weatherData { get; set; }
-        public Inverter inverter { get; set; }
+        public InverterData inverterData { get; set; }
+        public RoomTempData roomTempData { get; set; }
 
-        public ReturnData(WeatherData weatherData, Inverter inverter)
+        public ReturnData(WeatherData weatherData, InverterData inverterData, RoomTempData roomTempData)
         {
             this.weatherData = weatherData;
-            this.inverter = inverter;
+            this.inverterData = inverterData;
+            this.roomTempData = roomTempData;
         }
     }
 }

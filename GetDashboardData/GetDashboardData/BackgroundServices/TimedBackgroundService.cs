@@ -1,4 +1,5 @@
 ﻿using GetDashboardData.Models;
+using GetDashboardData.Models.Database;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ServiceReference1;
@@ -23,16 +24,20 @@ namespace GetDashboardData.backend
         private const int powerColoum = 37;
 
         private static WeatherData? weatherData;
-        private static Inverter? inverter;
+        private static InverterData? inverterData;
+        private static RoomTempData? roomTempData;
         private Timer? _timer;
         private static bool failedToUpdateWeather;
         private static bool failedToUpdatePowerProduction;
+        private static bool failedToUpdateRoomTemp;
         private static bool noPowerProductionLastHourFound;
         private static bool firstRun = true;
         private static int lastHourUpdateFtp;
         private static int lastMinUpdateWeb;
+        private static int lastMinUpdateDb;
         private static System.Timers.Timer ftpDataTimer = new System.Timers.Timer(300000);
         private static System.Timers.Timer webDataTimer = new System.Timers.Timer(60000);
+        private static System.Timers.Timer dbDataTimer = new System.Timers.Timer(60000);
 
         public TimedBackgroundService(IConfiguration config)
         {
@@ -48,6 +53,10 @@ namespace GetDashboardData.backend
             ftpDataTimer.Elapsed += OnTimedRequestFtpData;
             ftpDataTimer.AutoReset = true;
             ftpDataTimer.Stop();
+
+            dbDataTimer.Elapsed += OnTimedRequestTempData;
+            dbDataTimer.AutoReset = true;
+            dbDataTimer.Stop();
 
             _timer = new Timer(Worker, null, TimeSpan.Zero,
                 TimeSpan.FromSeconds(1));
@@ -77,7 +86,14 @@ namespace GetDashboardData.backend
                 RequestWeatherData();
             }
 
-            // Try again every minut until the data is updated.
+            // Update weather every 5 min
+            if (((int.Parse(DateTime.Now.ToString("mm")) % 15) == 0) && (lastMinUpdateDb != min))
+            {
+                lastMinUpdateDb = int.Parse(DateTime.Now.ToString("mm"));
+                RequestTemperature();
+            }
+            
+            // Try again every 5 minut until the data is updated.
             if (failedToUpdatePowerProduction)
                 ftpDataTimer.Start();
             else
@@ -88,11 +104,17 @@ namespace GetDashboardData.backend
                 webDataTimer.Start();
             else
                 webDataTimer.Stop();
+
+            // Try again every minut until the data is updated.
+            if (failedToUpdateRoomTemp)
+                dbDataTimer.Start();
+            else
+                dbDataTimer.Stop();
         }
 
         private void GetDataInParallel()
         {
-            Parallel.Invoke(() => RequestWeatherData(), () => RequestFtpData());
+            Parallel.Invoke(() => RequestWeatherData(), () => RequestFtpData(), () => RequestTemperature());
         }
 
         private static void OnTimedRequestWeatherData(object state, System.Timers.ElapsedEventArgs e)
@@ -240,7 +262,7 @@ namespace GetDashboardData.backend
                         }
                         catch { failedToUpdatePowerProduction = true; }
 
-                        inverter = new Inverter(true, (lastProduction - firstProduction), DateTime.Now);
+                        inverterData = new InverterData(true, (lastProduction - firstProduction), DateTime.Now);
                         lastHourUpdateFtp = int.Parse(DateTime.Now.ToString("HH"));
                         failedToUpdatePowerProduction = false;
                     }
@@ -254,6 +276,26 @@ namespace GetDashboardData.backend
             } while (noPowerProductionLastHourFound && (ftpRetries < fptRetryLimit));
         }
 
+        private static void OnTimedRequestTempData(object state, System.Timers.ElapsedEventArgs e)
+        {
+            RequestTemperature();
+        }
+
+        private static void RequestTemperature()
+        {
+            var context = new indeklimaContext(_config);
+            Temperatur? temperatur = context.Temperaturs.OrderByDescending(x => x.Dato).ThenByDescending(x => x.Tidspunkt)
+              .FirstOrDefault();
+
+            if (temperatur != null)
+            {
+                roomTempData = new RoomTempData(temperatur.Grader, temperatur.Dato + temperatur.Tidspunkt);
+                failedToUpdateRoomTemp = false;
+            }
+            else
+                failedToUpdateRoomTemp = true;
+        }
+
         public static WeatherData GetDashboardDataFromBackend()
         {
             if (weatherData == null)
@@ -262,12 +304,20 @@ namespace GetDashboardData.backend
                 return weatherData;
         }
 
-        public static Inverter GetInverterDataFromBackend()
+        public static InverterData GetInverterDataFromBackend()
         {
-            if (inverter == null)
-                return new Inverter(false, 0, null);
+            if (inverterData == null)
+                return new InverterData(false, 0, null);
             else
-                return inverter;
+                return inverterData;
+        }
+        
+        public static RoomTempData GetTemperatureDataFromBackend()
+        {
+            if (roomTempData == null)
+                return new RoomTempData(0, null);
+            else
+                return roomTempData;
         }
 
         public void Dispose()

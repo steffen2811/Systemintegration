@@ -16,8 +16,9 @@ namespace GetDashboardData.Controllers
         public ReturnData Get()
         {
             WeatherData? weatherData = TimedBackgroundService.GetDashboardDataFromBackend();
-            Inverter? inverterData = TimedBackgroundService.GetInverterDataFromBackend();
-            var response = new ReturnData(weatherData, inverterData);
+            InverterData? inverterData = TimedBackgroundService.GetInverterDataFromBackend();
+            RoomTempData? roomTempData = TimedBackgroundService.GetTemperatureDataFromBackend();
+            var response = new ReturnData(weatherData, inverterData, roomTempData);
             return response;
         }
     }
