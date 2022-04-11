@@ -4,7 +4,8 @@ namespace Dashboard.Data
     public class ReturnData
     {
         public WeatherData weatherData { get; set; }
-        public Inverter inverter { get; set; }
+        public InverterData inverterData { get; set; }
+        public RoomTempData roomTempData { get; set; }
 
     }
 }

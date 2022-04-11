@@ -287,6 +287,9 @@ namespace GetDashboardData.backend
             Temperatur? temperatur = context.Temperaturs.OrderByDescending(x => x.Dato).ThenByDescending(x => x.Tidspunkt)
               .FirstOrDefault();
 
+            var temperatures = context.Temperaturs.OrderByDescending(x => x.Dato).ThenByDescending(x => x.Tidspunkt)
+              .Take(10).ToArray();
+
             if (temperatur != null)
             {
                 roomTempData = new RoomTempData(temperatur.Grader, temperatur.Dato + temperatur.Tidspunkt);

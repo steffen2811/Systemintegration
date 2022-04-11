@@ -23,7 +23,7 @@ else
 {
     <div class="container">
       <div class="row">
-        <div class="col">
+        <div class="col-3">
             <div class="bg-light text-dark p-3 me-3 rounded" style="width: 100%;">
             <h2 class="text-center mb-0">Aktuel Vejr</h2>
             @if (data.weatherData.updated == null)
@@ -40,7 +40,7 @@ else
             }
           </div>
         </div>
-        <div class="col">
+        <div class="col-3">
           <div class="bg-light text-dark p-3 me-3 rounded" style="width: 100%;">
             <h2 class="text-center mb-0">Vejrudsigt</h2>
             @if (data.weatherData.updated == null)
@@ -59,21 +59,35 @@ else
             }
           </div>
         </div>
-        <div class="col">
+        <div class="col-3">
             <div class="bg-light text-dark p-3 rounded" style="width: 100%;">
             <h2 class="text-center mb-0">Strøm-information</h2>
-            @if (data.inverter.updated == null)
+            @if (data.inverterData.updated == null)
             {
               <p>Strøm-information er ikke tilgængelig</p>
             }
             else
             {
-              <p class="text-center fw-light" style="font-size: 0.75rem">Sidst opdateret: @data.inverter.updated</p>
-              <p>Strøm produktion den sidste time?: @((data.inverter.powerProductionLastHour) ? "Ja" : "Nej")</p>
-              @if (data.inverter.powerProductionLastHour)
+              <p class="text-center fw-light" style="font-size: 0.75rem">Sidst opdateret: @data.inverterData.updated</p>
+              <p>Strøm produktion den sidste time?: @((data.inverterData.powerProductionLastHour) ? "Ja" : "Nej")</p>
+              @if (data.inverterData.powerProductionLastHour)
               {
-                  <p>Watt: @(data.inverter.powerProduction)W</p>
+                  <p>Watt: @(data.inverterData.powerProduction)W</p>
               }
+            }
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="bg-light text-dark p-3 rounded" style="width: 100%;">
+            <h2 class="text-center mb-0">Kontor temperatur</h2>
+            @if (data.roomTempData.updated == null)
+            {
+              <p>Kontor temperatur er ikke tilgængelig</p>
+            }
+            else
+            {
+              <p class="text-center fw-light" style="font-size: 0.75rem">Sidst opdateret: @data.roomTempData.updated</p>
+              <p>Temperatur: @(data.roomTempData.temperature)°C</p>
             }
           </div>
         </div>
@@ -92,7 +106,7 @@ else
     {
         try
         {
-            data = await DataService.GetWeatherDataAsync();
+            data = await DataService.GetDataAsync();
             couldNotConnect = false;
             if (data != oldData)
             {

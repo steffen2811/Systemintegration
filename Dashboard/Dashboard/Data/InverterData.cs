@@ -1,6 +1,6 @@
 ﻿namespace Dashboard.Data
 {
-    public class Inverter
+    public class InverterData
     {
         public bool powerProductionLastHour { get; set; }
         public int powerProduction { get; set; }
