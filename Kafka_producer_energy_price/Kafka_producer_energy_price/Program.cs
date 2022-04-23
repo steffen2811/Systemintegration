@@ -1,5 +1,12 @@
 ﻿
 using Kafka_producer_energy_price;
-
-// Start the service
-EventProcessor.HandleEvents();
+namespace Kafka_producer_energy_price
+{
+    class main
+    {
+        static async Task Main()
+        {
+            await EventProcessor.HandleEvents();
+        }
+    }
+}

@@ -16,14 +16,26 @@ namespace Kafka_producer_energy_price
             ClientId = Dns.GetHostName(),
         };
 
-        public static void KafkaProducer(double price, string reply_to, string correl_id)
+        public static void KafkaProducer(string data, string reply_to, string correl_id)
         {
             using (var producer = new ProducerBuilder<Null, string>(config).Build())
             {
                 var headers = new Headers();
                 headers.Add("correlation-identifier", Encoding.ASCII.GetBytes(correl_id) );
                 headers.Add("message-id", Encoding.ASCII.GetBytes(Guid.NewGuid().ToString("N")));
-                producer.ProduceAsync(reply_to, new Message<Null, string> { Value = price.ToString(), Headers = headers });
+                headers.Add("timestamp", BitConverter.GetBytes(DateTime.Now.Ticks));
+                producer.ProduceAsync(reply_to, new Message<Null, string> { Value = data, Headers = headers });
+                producer.Flush();
+            }
+        }
+        public static void KafkaInvalidMessage(string message_id)
+        {
+            using (var producer = new ProducerBuilder<Null, string>(config).Build())
+            {
+                var headers = new Headers();
+                headers.Add("message-id", Encoding.ASCII.GetBytes(message_id));
+                headers.Add("timestamp", BitConverter.GetBytes(DateTime.Now.Ticks));
+                producer.ProduceAsync("InvalidPriceRequests", new Message<Null, string> { Headers = headers });
                 producer.Flush();
             }
         }

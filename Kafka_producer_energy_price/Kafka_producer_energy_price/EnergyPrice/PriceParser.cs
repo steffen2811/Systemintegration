@@ -22,7 +22,8 @@ namespace Kafka_producer_energy_price
             {
                 if (price.HourDK == hour && price.PriceArea == area)
                 {
-                    return Math.Round(price.SpotPriceDKK / 1000, 2);
+                    if (price != null)
+                        return Math.Round((double)price.SpotPriceDKK / 1000, 2);
                 }
             }
             return null;
@@ -76,8 +77,8 @@ namespace Kafka_producer_energy_price
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public string PriceArea { get; set; }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public float SpotPriceDKK { get; set; }
-        public float SpotPriceEUR { get; set; }
+        public float? SpotPriceDKK { get; set; }
+        public float? SpotPriceEUR { get; set; }
     }
 
 }
