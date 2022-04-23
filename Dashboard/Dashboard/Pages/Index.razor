@@ -91,6 +91,21 @@ else
             }
           </div>
         </div>
+        <div class="col-3">
+          <div class="bg-light text-dark p-3 rounded" style="width: 100%;">
+            <h2 class="text-center mb-0">Elpriser</h2>
+            @if (data.energyPrice.updated == null)
+            {
+              <p>Elpriser er ikke tilgængelig</p>
+            }
+            else
+            {
+              <p class="text-center fw-light" style="font-size: 0.75rem">Sidst opdateret: @data.energyPrice.updated</p>
+              <p>Pris: @(data.energyPrice.energyPrice) DKK</p>
+            }
+          </div>
+
+        </div>
       </div>
     </div>
 }

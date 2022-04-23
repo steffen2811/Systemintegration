@@ -9,6 +9,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHostedService<TimedBackgroundService>();
+builder.Services.AddHostedService<KafkaBackgroundService>();
 
 var app = builder.Build();
 

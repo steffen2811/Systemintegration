@@ -18,7 +18,8 @@ namespace GetDashboardData.Controllers
             WeatherData? weatherData = TimedBackgroundService.GetDashboardDataFromBackend();
             InverterData? inverterData = TimedBackgroundService.GetInverterDataFromBackend();
             RoomTempData? roomTempData = TimedBackgroundService.GetTemperatureDataFromBackend();
-            var response = new ReturnData(weatherData, inverterData, roomTempData);
+            EnergyPrice? energyPriceData = KafkaBackgroundService.GetEnergyPrice();
+            var response = new ReturnData(weatherData, inverterData, roomTempData, energyPriceData);
             return response;
         }
     }

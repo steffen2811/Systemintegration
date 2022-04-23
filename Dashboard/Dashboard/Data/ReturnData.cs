@@ -7,5 +7,7 @@ namespace Dashboard.Data
         public InverterData inverterData { get; set; }
         public RoomTempData roomTempData { get; set; }
 
+        public EnergyPrice energyPrice { get; set; }
+
     }
 }

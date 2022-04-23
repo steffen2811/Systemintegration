@@ -1,4 +1,5 @@
-﻿using GetDashboardData.Models;
+﻿using GetDashboardData.Kafka;
+using GetDashboardData.Models;
 using GetDashboardData.Models.Database;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -30,11 +31,13 @@ namespace GetDashboardData.backend
         private static bool failedToUpdateWeather;
         private static bool failedToUpdatePowerProduction;
         private static bool failedToUpdateRoomTemp;
+        private static bool failedToUpdateEnergyPrice;
         private static bool noPowerProductionLastHourFound;
         private static bool firstRun = true;
         private static int lastHourUpdateFtp;
         private static int lastMinUpdateWeb;
         private static int lastMinUpdateDb;
+        private static int lastHourUpdateKafka;
         private static System.Timers.Timer ftpDataTimer = new System.Timers.Timer(300000);
         private static System.Timers.Timer webDataTimer = new System.Timers.Timer(60000);
         private static System.Timers.Timer dbDataTimer = new System.Timers.Timer(60000);
@@ -77,6 +80,13 @@ namespace GetDashboardData.backend
             if (lastHourUpdateFtp != hour)
             {
                 RequestFtpData();
+            }
+
+            // Request energy price data every hour when min = 00
+            if (lastHourUpdateKafka != hour)
+            {
+                RequestEnergyPrice.KafkaRequestEnergyPrice();
+                ManageCorrelationIdentifiers.DeleteOldCorrelationIdentifier(); // Clean-up in correlationIds
             }
 
             // Update weather every 5 min
@@ -187,92 +197,96 @@ namespace GetDashboardData.backend
 
                 if (ftpConnected)
                 {
-                    var stream = fptResponse.GetResponseStream();
-                    var reader = new StreamReader(stream);
-
-                    List<string> directories = new List<string>();
-
-                    string line = reader.ReadLine();
-                    while (!string.IsNullOrEmpty(line))
+                    try
                     {
-                        directories.Add(line);
-                        line = reader.ReadLine();
-                    }
+                        var stream = fptResponse.GetResponseStream();
+                        var reader = new StreamReader(stream);
 
-                    reader.Close();
-                    fptResponse.Close();
+                        List<string> directories = new List<string>();
 
-                    string date = DateTime.Now.AddYears(-1).ToString("yyMMddHH");
-
-                    var matchingvalues = directories
-                    .Where(stringToCheck => stringToCheck.Contains(date));
-
-                    if (matchingvalues.Count() != 0)
-                    {
-                        // Get the object used to communicate with the server.
-                        ftpRequest = (FtpWebRequest)WebRequest.Create(ftpUrl + "/" + matchingvalues.Last());
-                        ftpRequest.Method = WebRequestMethods.Ftp.DownloadFile;
-
-                        // This example assumes the FTP site uses anonymous logon.
-                        ftpRequest.Credentials = new NetworkCredential(_config["ftp:Username"], _config["ftp:Password"]);
-
-                        fptResponse = (FtpWebResponse)ftpRequest.GetResponse();
-
-                        Stream responseStream = fptResponse.GetResponseStream();
-                        reader = new StreamReader(responseStream);
-                        var content = reader.ReadToEnd();
-
-                        string[] lines = content.Split(
-                            "\n",
-                            StringSplitOptions.None
-                        );
-
-                        foreach (string csvLine in lines)
+                        string line = reader.ReadLine();
+                        while (!string.IsNullOrEmpty(line))
                         {
-                            if (csvLine.Contains("[wr_ende]"))
-                                break; // End found
+                            directories.Add(line);
+                            line = reader.ReadLine();
+                        }
 
-                            if (firstProductionIndex != 0)
-                                lastProductionIndex = index;
-                            else
+                        reader.Close();
+                        fptResponse.Close();
+
+                        string date = DateTime.Now.AddYears(-1).ToString("yyMMddHH");
+
+                        var matchingvalues = directories
+                        .Where(stringToCheck => stringToCheck.Contains(date));
+
+                        if (matchingvalues.Count() != 0)
+                        {
+                            // Get the object used to communicate with the server.
+                            ftpRequest = (FtpWebRequest)WebRequest.Create(ftpUrl + "/" + matchingvalues.Last());
+                            ftpRequest.Method = WebRequestMethods.Ftp.DownloadFile;
+
+                            // This example assumes the FTP site uses anonymous logon.
+                            ftpRequest.Credentials = new NetworkCredential(_config["ftp:Username"], _config["ftp:Password"]);
+
+                            fptResponse = (FtpWebResponse)ftpRequest.GetResponse();
+
+                            Stream responseStream = fptResponse.GetResponseStream();
+                            reader = new StreamReader(responseStream);
+                            var content = reader.ReadToEnd();
+
+                            string[] lines = content.Split(
+                                "\n",
+                                StringSplitOptions.None
+                            );
+
+                            foreach (string csvLine in lines)
                             {
-                                if (startFound)
-                                    firstProductionIndex = index;
+                                if (csvLine.Contains("[wr_ende]"))
+                                    break; // End found
+
+                                if (firstProductionIndex != 0)
+                                    lastProductionIndex = index;
                                 else
                                 {
-                                    if (csvLine.Contains("INTERVAL"))
-                                        startFound = true;
+                                    if (startFound)
+                                        firstProductionIndex = index;
+                                    else
+                                    {
+                                        if (csvLine.Contains("INTERVAL"))
+                                            startFound = true;
+                                    }
                                 }
+
+                                index++;
                             }
 
-                            index++;
-                        }
+                            string[] parts = lines[firstProductionIndex].Split(";");
+                            try
+                            {
+                                firstProduction = int.Parse(parts[powerColoum]);
+                            }
+                            catch { failedToUpdatePowerProduction = true; }
 
-                        string[] parts = lines[firstProductionIndex].Split(";");
-                        try
+                            parts = lines[lastProductionIndex].Split(";");
+                            try
+                            {
+                                lastProduction = int.Parse(parts[powerColoum]);
+                            }
+                            catch { failedToUpdatePowerProduction = true; }
+
+                            inverterData = new InverterData(true, (lastProduction - firstProduction), DateTime.Now);
+                            lastHourUpdateFtp = int.Parse(DateTime.Now.ToString("HH"));
+                            failedToUpdatePowerProduction = false;
+                        }
+                        else
                         {
-                            firstProduction = int.Parse(parts[powerColoum]);
+                            noPowerProductionLastHourFound = true;
+                            ftpRetries++;
+                            Thread.Sleep(5000);
                         }
-                        catch { failedToUpdatePowerProduction = true; }
-
-                        parts = lines[lastProductionIndex].Split(";");
-                        try
-                        {
-                            lastProduction = int.Parse(parts[powerColoum]);
-                        }
-                        catch { failedToUpdatePowerProduction = true; }
-
-                        inverterData = new InverterData(true, (lastProduction - firstProduction), DateTime.Now);
-                        lastHourUpdateFtp = int.Parse(DateTime.Now.ToString("HH"));
-                        failedToUpdatePowerProduction = false;
                     }
-                    else
-                    {
-                        noPowerProductionLastHourFound = true;
-                        ftpRetries++;
-                        Thread.Sleep(5000);
-                    }
-                }
+                    catch { failedToUpdatePowerProduction = true; }
+            }
             } while (noPowerProductionLastHourFound && (ftpRetries < fptRetryLimit));
         }
 
@@ -321,6 +335,11 @@ namespace GetDashboardData.backend
                 return new RoomTempData(0, null);
             else
                 return roomTempData;
+        }
+
+        public static void SetLastHourUpdateKafka(int HourUpdateKafka)
+        {
+            lastHourUpdateKafka = HourUpdateKafka;
         }
 
         public void Dispose()
