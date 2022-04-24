@@ -138,13 +138,12 @@ else
     {
         CallApi();
 
-        var timer = new System.Threading.Timer((_) =>
+        //set timer
+        var timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+
+        while (await timer.WaitForNextTickAsync())
         {
-            InvokeAsync( async ()  =>
-            {
-               // Add your update logic here
-               CallApi();
-            });
-        }, null, 0, 6000);
+            CallApi();
+        }
     }
 }
