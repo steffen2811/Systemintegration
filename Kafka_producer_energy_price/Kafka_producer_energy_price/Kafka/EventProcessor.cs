@@ -66,7 +66,17 @@ namespace Kafka_producer_energy_price
                         PriceParser parser = new(json);
 
                         DateTime thisHour = DateOnly.FromDateTime(DateTime.Now).ToDateTime(new(DateTime.Now.Hour, 00));
-                        price = parser.GetWestPrice(thisHour);
+                        try
+                        {
+                            price = parser.GetWestPrice(thisHour);
+                        }
+                        catch
+                        {
+                            // If no price is found in Euro or DKK, re-request the prices.
+                            json = await PriceDownloader.GetTodaysPricesJsonAsync();
+                            JsonCache.Put(json);
+                            continue;
+                        }
                         var data = JsonSerializer.Serialize(new EnergyPrice { energyPrice = price, updated = DateTime.Now });
                         Producer.KafkaProducer(data, reply_to, correl_id);
                     }

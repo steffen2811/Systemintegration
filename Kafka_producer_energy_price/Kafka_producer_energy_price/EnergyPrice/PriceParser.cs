@@ -23,7 +23,12 @@ namespace Kafka_producer_energy_price
                 if (price.HourDK == hour && price.PriceArea == area)
                 {
                     if (price != null)
-                        return Math.Round((double)price.SpotPriceDKK / 1000, 2);
+                    {
+                        if (price.SpotPriceDKK != null)
+                            return Math.Round((double)price.SpotPriceDKK / 1000, 2);
+                        if (price.SpotPriceEUR != null)
+                            return Math.Round((double)price.SpotPriceEUR * 7.5 / 1000, 2); // Simply handle if DKK is missing (Euro multiply by 7.5)
+                    }
                 }
             }
             return null;
