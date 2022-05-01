@@ -241,11 +241,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Steffen\\source\\repos\\steffen2811\\Kafka\\Kafka_producer_energy_price\\Kafka_producer_energy_price\\Kafka_producer_energy_price.csproj",
+      "projectUniqueName": "C:\\Users\\Steffen\\source\\repos\\steffen2811\\Case_4\\Kafka_producer_energy_price\\Kafka_producer_energy_price\\Kafka_producer_energy_price.csproj",
       "projectName": "Kafka_producer_energy_price",
-      "projectPath": "C:\\Users\\Steffen\\source\\repos\\steffen2811\\Kafka\\Kafka_producer_energy_price\\Kafka_producer_energy_price\\Kafka_producer_energy_price.csproj",
+      "projectPath": "C:\\Users\\Steffen\\source\\repos\\steffen2811\\Case_4\\Kafka_producer_energy_price\\Kafka_producer_energy_price\\Kafka_producer_energy_price.csproj",
       "packagesPath": "C:\\Users\\Steffen\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Steffen\\source\\repos\\steffen2811\\Kafka\\Kafka_producer_energy_price\\Kafka_producer_energy_price\\obj\\",
+      "outputPath": "C:\\Users\\Steffen\\source\\repos\\steffen2811\\Case_4\\Kafka_producer_energy_price\\Kafka_producer_energy_price\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
@@ -297,7 +297,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.201\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.202\\RuntimeIdentifierGraph.json"
       }
     }
   }

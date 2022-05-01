@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "VfLFNeBswx58wIlqXNW7MgTqX3bVBTKA49X2zvx8eHVf0UWjCiJOfp2ov6MwfqgTcJOmUjDgn2j1+nbIxADf3w==",
+  "dgSpecHash": "qtpdLZCFVlLgh0pUrMzCfnAK30GTSXnpv7LRNNmJOh/AevT8EyGABbGXQ1kjZxgN6xQ5xvKNAYMkUCTIWI63Ew==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Steffen\\source\\repos\\steffen2811\\Kafka\\Kafka_producer_energy_price\\Kafka_producer_energy_price\\Kafka_producer_energy_price.csproj",
+  "projectFilePath": "C:\\Users\\Steffen\\source\\repos\\steffen2811\\Case_4\\Kafka_producer_energy_price\\Kafka_producer_energy_price\\Kafka_producer_energy_price.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Steffen\\.nuget\\packages\\confluent.kafka\\1.8.2\\confluent.kafka.1.8.2.nupkg.sha512",
     "C:\\Users\\Steffen\\.nuget\\packages\\librdkafka.redist\\1.8.2\\librdkafka.redist.1.8.2.nupkg.sha512",
